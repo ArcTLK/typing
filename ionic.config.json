@@ -1,5 +1,7 @@
 {
   "name": "typing",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }
