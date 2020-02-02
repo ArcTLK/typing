@@ -1,12 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
+  private paramMapSub: any;
+  private instanceId: string;
   public time: number;
   private allWords: string[] = [];
   public words: string[] = [];
@@ -17,11 +21,19 @@ export class HomePage implements OnInit {
   public wpm: string = '0';
   private totalTime: number = 120;
   public shownWords: number = 15;
+  private name: string = '';
+
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private firestore: AngularFirestore,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
+    // get category id and event index
+    this.paramMapSub = this.route.paramMap.subscribe((paramMap: ParamMap) => {
+      this.name = paramMap.get('name');
+    });
     this.time = this.totalTime;
     this.http.get('assets/words.json').subscribe((data: string[]) => {
       this.allWords = data;
@@ -29,6 +41,11 @@ export class HomePage implements OnInit {
         this.words.push(this.allWords[Math.floor(Math.random() * this.allWords.length)]);
       }
     });
+    this.instanceId = this.firestore.createId();
+  }
+
+  ngOnDestroy() {
+    this.paramMapSub.unsubscribe();
   }
 
   evaluate() {
@@ -39,6 +56,13 @@ export class HomePage implements OnInit {
         if (this.time > 0) {
           --this.time;
           this.wpm = (this.correctWords * 60 / (this.totalTime - this.time)).toFixed(2);
+          this.firestore.doc('/typingResults/' + this.instanceId).set({
+            name: this.name,
+            wpm: this.wpm,
+            time: Date.now(),
+            correct: this.correctWords,
+            incorrect: this.incorrectWords
+          });
         }
         else {
           window.clearInterval(interval);
@@ -48,7 +72,7 @@ export class HomePage implements OnInit {
 
     // check if last character is a space
     if (this.input[this.input.length - 1] === ' ') {
-      if (this.input.trimRight() === this.words[this.correctWords + this.incorrectWords]) {
+      if (this.input.trim() === this.words[this.correctWords + this.incorrectWords]) {
         ++this.correctWords;
       }
       else {

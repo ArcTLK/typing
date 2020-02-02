@@ -8,7 +8,8 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit {
-  public key: string;
+  public key: string = '';
+  public name: string = '';
 
   constructor(
     private router: Router,
@@ -19,14 +20,25 @@ export class LoginPage implements OnInit {
   }
 
   async validateKey() {
-    if (this.key === 'watermelon') {
-      this.router.navigateByUrl('/home');
+    if (this.key === 'muskmelon') {
+      this.router.navigateByUrl('/results');
     }
-    else {
+    else if (this.key === 'watermelon' && this.name !== '') {
+      this.router.navigateByUrl('/home/' + this.name);
+    }
+    else if (this.key !== 'watermelon') {
       const alert = await this.alertController.create({
         header: 'Hmm...',
         message: 'Seems like you\'ve entered an invalid key!',
         buttons: ['Retry']
+      });
+      await alert.present();
+    }
+    else {
+      const alert = await this.alertController.create({
+        header: 'Hmm...',
+        message: 'You didn\'t name yourself!',
+        buttons: ['Sorry']
       });
       await alert.present();
     }

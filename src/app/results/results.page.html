@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Results</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row style="font-weight: bold">
+      <ion-col>Name</ion-col>
+      <ion-col>Correct Words</ion-col>
+      <ion-col>Incorrect Words</ion-col>
+      <ion-col>Accuracy</ion-col>
+      <ion-col>WPM</ion-col>
+    </ion-row>
+    <ion-row *ngFor="let result of results; index as i" style="border: #000 solid 1px" [ngStyle]="{'background-color': i % 2 ? '#fff' : '#ddd'}">
+      <ion-col>{{ result.name }}</ion-col>
+      <ion-col>{{ result.correct }}</ion-col>
+      <ion-col>{{ result.incorrect }}</ion-col>
+      <ion-col>{{ result.correct / (result.correct + result.incorrect) * 100 }}%</ion-col>
+      <ion-col>{{ result.wpm }}</ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
