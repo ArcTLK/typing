@@ -12,9 +12,11 @@ export class HomePage implements OnInit {
   public words: string[] = [];
   private ticking: boolean = false;
   public correctWords: number = 0;
+  public incorrectWords: number = 0;
   public input: string = '';
-  public wpm: string = '';
+  public wpm: string = '0';
   private totalTime: number = 120;
+  public shownWords: number = 15;
   constructor(
     private http: HttpClient
   ) {}
@@ -46,29 +48,32 @@ export class HomePage implements OnInit {
 
     // check if last character is a space
     if (this.input[this.input.length - 1] === ' ') {
-      // take last word from input
-      const word = this.input.slice(0, this.input.length - 1).split(' ').pop();
-      if (word === this.words[0]) {
+      if (this.input.trimRight() === this.words[this.correctWords + this.incorrectWords]) {
         ++this.correctWords;
-        this.words.shift();
-        this.words.push(this.allWords[Math.floor(Math.random() * this.allWords.length)]);
       }
+      else {
+        // highlight entire word as red
+        for(let i = 0; i < this.words[this.correctWords + this.incorrectWords].length; ++i) {
+          document.getElementById(((this.correctWords + this.incorrectWords) % this.shownWords) + '-' + i).style.color = 'red';
+        }
+        ++this.incorrectWords;
+      }
+      this.words.push(this.allWords[Math.floor(Math.random() * this.allWords.length)]);
+      this.input = '';
     }
     else {
-      // take last word from input
-      const word = this.input.split(' ').pop();
       // highlight correct & wrong letters
-      for(var i = 0; i < word.length; ++i) {
-        if (word.charAt(i) === this.words[0].charAt(i)) {
-          document.getElementById(0 + '-' + i).style.color = 'green';
+      for(var i = 0; i < this.input.length && i < this.words[this.correctWords + this.incorrectWords].length; ++i) {
+        if (this.input.charAt(i) === this.words[this.correctWords + this.incorrectWords].charAt(i)) {
+          document.getElementById(((this.correctWords + this.incorrectWords) % this.shownWords) + '-' + i).style.color = 'green';
         }
         else {
-          document.getElementById(0 + '-' + i).style.color = 'red';
+          document.getElementById(((this.correctWords + this.incorrectWords) % this.shownWords) + '-' + i).style.color = 'red';
         }
       }
       // return rest of the word to normal
-      while(i < this.words[0].length) {
-        document.getElementById(0 + '-' + i).style.color = '#000';
+      while(i < this.words[this.correctWords + this.incorrectWords].length) {
+        document.getElementById(((this.correctWords + this.incorrectWords) % this.shownWords) + '-' + i).style.color = '#000';
         ++i;
       }
     }
@@ -94,4 +99,7 @@ export class HomePage implements OnInit {
     }
   }
 
+  floor(number: number) {
+    return Math.floor(number);
+  }
 }

@@ -9,11 +9,19 @@
 <ion-content>
   <ion-card>
     <ion-card-header>
-      <ion-card-title>{{ mins }}:{{ secs }}</ion-card-title>
-      <ion-card-subtitle>{{ wpm }} WPM</ion-card-subtitle>
+      <ion-card-title style="float: right; text-align: right">
+        <div>{{ mins }}:{{ secs }}</div>
+        <div>{{ wpm }} wpm</div>
+      </ion-card-title>
+      <ion-card-subtitle style="float: left">
+        <div style="color: green">Correct: {{ correctWords }}</div>
+        <div style="color: red">Incorrect: {{ incorrectWords }}</div>
+        <div [ngStyle]="{'opacity': correctWords + incorrectWords > 0 ? 1 : 0}">Accuracy: {{ correctWords / (correctWords + incorrectWords) * 100 | number:'1.2-2' }}%</div>
+      </ion-card-subtitle>
+      <div style="clear:both"></div>
     </ion-card-header>
     <ion-card-content>
-      <div *ngFor="let word of words; index as wi" class="word">
+      <div *ngFor="let word of words.slice(floor((correctWords + incorrectWords) / shownWords) * shownWords, floor((correctWords + incorrectWords) / shownWords) * shownWords + shownWords); index as wi" class="word">
         <span *ngFor="let j of [].constructor(word.length); index as i" [id]="wi + '-' + i">{{ word.charAt(i) }}</span>
       </div>
     </ion-card-content>
