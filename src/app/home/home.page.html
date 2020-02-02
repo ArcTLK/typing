@@ -7,5 +7,19 @@
 </ion-header>
 
 <ion-content>
-  
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>{{ mins }}:{{ secs }}</ion-card-title>
+      <ion-card-subtitle>{{ wpm }} WPM</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <div *ngFor="let word of words; index as wi" class="word">
+        <span *ngFor="let j of [].constructor(word.length); index as i" [id]="wi + '-' + i">{{ word.charAt(i) }}</span>
+      </div>
+    </ion-card-content>
+    <ion-item>
+      <ion-label position="floating">Start typing here</ion-label>
+      <ion-textarea [(ngModel)]="input" (ngModelChange)="evaluate()" [disabled]="time <= 0"></ion-textarea>
+    </ion-item>
+  </ion-card>
 </ion-content>
