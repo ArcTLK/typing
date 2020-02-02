@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card>
+    <img src="./assets/icon/favicon.png" />
+    <ion-item>
+      <ion-label position="floating">Enter key here</ion-label>
+      <ion-input [(ngModel)]="key" type="password"></ion-input>
+    </ion-item>
+    <ion-card-content>
+      Click the button below once you're ready to start typing.
+    </ion-card-content>
+    <ion-button expand="full" fill="clear" (click)="validateKey()">Start the countdown!</ion-button>
+  </ion-card>
+</ion-content>
