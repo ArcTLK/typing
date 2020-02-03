@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AngularFirestore } from '@angular/fire/firestore';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -19,14 +20,16 @@ export class HomePage implements OnInit, OnDestroy {
   public incorrectWords: number = 0;
   public input: string = '';
   public wpm: string = '0';
-  private totalTime: number = 120;
+  private totalTime: number = 60;
   public shownWords: number = 15;
   private name: string = '';
-
+  public round: number = 1;
+  private wordRange: number;
   constructor(
     private http: HttpClient,
     private firestore: AngularFirestore,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private alert: AlertController
   ) {}
 
   ngOnInit() {
@@ -37,8 +40,17 @@ export class HomePage implements OnInit, OnDestroy {
     this.time = this.totalTime;
     this.http.get('assets/words.json').subscribe((data: string[]) => {
       this.allWords = data;
+      if (this.round === 1) {
+        this.wordRange = 400;
+      }
+      else if (this.round === 2) {
+        this.wordRange = 700;
+      }
+      else {
+        this.wordRange = this.allWords.length;
+      }
       for(let i = 0; i < 15; ++i) {
-        this.words.push(this.allWords[Math.floor(Math.random() * this.allWords.length)]);
+        this.words.push(this.allWords[Math.floor(Math.random() * this.wordRange)]);
       }
     });
     this.instanceId = this.firestore.createId();
@@ -61,10 +73,35 @@ export class HomePage implements OnInit, OnDestroy {
             wpm: this.wpm,
             time: Date.now(),
             correct: this.correctWords,
-            incorrect: this.incorrectWords
+            incorrect: this.incorrectWords,
+            round: this.round
           });
         }
         else {
+          if (this.round < 3) {
+            ++this.round;
+            if (this.round === 2) {
+              this.totalTime = 120;
+            }
+            else if (this.round === 3) {
+              this.totalTime = 150;
+            }
+            this.ticking = false;
+            this.time = this.totalTime;
+            this.words = [];
+            for(let i = 0; i < 15; ++i) {
+              this.words.push(this.allWords[Math.floor(Math.random() * this.wordRange)]);
+            }
+            this.correctWords = 0;
+            this.incorrectWords = 0;
+            this.wpm = '0';
+            this.input = '';
+            this.alert.create({
+              header: 'Round ' + this.round,
+              message: 'Are you ready for the next round? (' + (this.round - 1) + '/3 done)',
+              buttons: ['Start']
+            }).then(alert => alert.present());
+          }
           window.clearInterval(interval);
         }
       }, 1000);
@@ -82,7 +119,7 @@ export class HomePage implements OnInit, OnDestroy {
         }
         ++this.incorrectWords;
       }
-      this.words.push(this.allWords[Math.floor(Math.random() * this.allWords.length)]);
+      this.words.push(this.allWords[Math.floor(Math.random() * this.wordRange)]);
       this.input = '';
     }
     else {
