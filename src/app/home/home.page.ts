@@ -37,24 +37,27 @@ export class HomePage implements OnInit, OnDestroy {
     this.paramMapSub = this.route.paramMap.subscribe((paramMap: ParamMap) => {
       this.name = paramMap.get('name');
       this.round = parseInt(paramMap.get('round'));
+      this.http.get('assets/words.json').subscribe((data: string[]) => {
+        this.allWords = data;
+        if (this.round === 1) {
+          this.wordRange = 400;
+          this.totalTime = 60;
+        }
+        else if (this.round === 2) {
+          this.wordRange = 700;
+          this.totalTime = 120;
+        }
+        else {
+          this.wordRange = this.allWords.length;
+          this.totalTime = 150;
+        }
+        this.time = this.totalTime;
+        for(let i = 0; i < 15; ++i) {
+          this.words.push(this.allWords[Math.floor(Math.random() * this.wordRange)]);
+        }
+      });
+      this.instanceId = this.firestore.createId();
     });
-    this.time = this.totalTime;
-    this.http.get('assets/words.json').subscribe((data: string[]) => {
-      this.allWords = data;
-      if (this.round === 1) {
-        this.wordRange = 400;
-      }
-      else if (this.round === 2) {
-        this.wordRange = 700;
-      }
-      else {
-        this.wordRange = this.allWords.length;
-      }
-      for(let i = 0; i < 15; ++i) {
-        this.words.push(this.allWords[Math.floor(Math.random() * this.wordRange)]);
-      }
-    });
-    this.instanceId = this.firestore.createId();
   }
 
   ngOnDestroy() {
