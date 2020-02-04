@@ -14,13 +14,13 @@ export class ResultsPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.resultSub = this.firestore.collection('typingResults').snapshotChanges().subscribe(response => {
-      this.results = response.map(value => value.payload.doc.data());
+    this.resultSub = this.firestore.collection('typingResults').ref.orderBy('round', 'desc').onSnapshot(response => {
+      this.results = response.docs.map(value => value.data());
     });
   }
 
   ngOnDestroy() {
-    this.resultSub.unsubscribe();
+    this.resultSub();
   }
 
 }

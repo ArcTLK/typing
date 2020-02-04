@@ -36,6 +36,7 @@ export class HomePage implements OnInit, OnDestroy {
     // get category id and event index
     this.paramMapSub = this.route.paramMap.subscribe((paramMap: ParamMap) => {
       this.name = paramMap.get('name');
+      this.round = parseInt(paramMap.get('round'));
     });
     this.time = this.totalTime;
     this.http.get('assets/words.json').subscribe((data: string[]) => {
@@ -78,32 +79,14 @@ export class HomePage implements OnInit, OnDestroy {
           });
         }
         else {
-          if (this.round < 3) {
-            ++this.round;
-            if (this.round === 2) {
-              this.totalTime = 120;
-            }
-            else if (this.round === 3) {
-              this.totalTime = 150;
-            }
             this.ticking = false;
-            this.time = this.totalTime;
             this.words = [];
-            for(let i = 0; i < 15; ++i) {
-              this.words.push(this.allWords[Math.floor(Math.random() * this.wordRange)]);
-            }
+            this.input = '';
             this.correctWords = 0;
             this.incorrectWords = 0;
             this.wpm = '0';
-            this.input = '';
-            this.alert.create({
-              header: 'Round ' + this.round,
-              message: 'Are you ready for the next round? (' + (this.round - 1) + '/3 done)',
-              buttons: ['Start']
-            }).then(alert => alert.present());
+            window.clearInterval(interval);
           }
-          window.clearInterval(interval);
-        }
       }, 1000);
     }
 
@@ -139,7 +122,35 @@ export class HomePage implements OnInit, OnDestroy {
       }
     }
   }
-
+  async showAlert() {
+    let alert = await this.alert.create({
+      header: 'Round ' + this.round,
+      backdropDismiss: false,
+      message: '<strong>Scores:</strong><br />Correct: '+ this.correctWords + '<br />Incorrect: ' + this.incorrectWords + '<br />Accuracy: ' + (this.correctWords / (this.correctWords + this.incorrectWords) * 100).toFixed(2) + '<br />WPM: ' + this.wpm + '<br />Are you ready for the next round? (' + (this.round - 1) + '/3 done)',
+      buttons: [{
+        text: 'Start',
+        handler: data => {
+          if (this.round === 2 && data.key === 'roundtwokey') {
+            alert.dismiss();
+            return false;
+          }
+          else if (this.round === 3 && data.key === 'startthefinalround') {
+            alert.dismiss();
+            return false;
+          }
+          else {
+            return false;
+          }
+        }
+      }],
+      inputs: [{
+        'name': 'key',
+        'type': 'password',
+        'placeholder': 'Enter key for round ' + this.round + ' here'
+      }]
+    });
+    await alert.present();
+  }
   get mins() {
     const mins = Math.floor(this.time / 60);
     if (mins < 10) {
